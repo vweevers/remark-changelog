@@ -1,0 +1,39 @@
+{
+  "name": "remark-changelog",
+  "version": "0.0.0",
+  "description": "Lint or fix a changelog written in markdown, following Keep A Changelog.",
+  "license": "MIT",
+  "author": "Vincent Weevers",
+  "scripts": {
+    "test": "standard && node test"
+  },
+  "files": [
+    "lib",
+    "index.js"
+  ],
+  "dependencies": {
+    "github-from-package": "0.0.0",
+    "is-array-sorted": "~2.0.0",
+    "read-closest-package": "~1.2.0",
+    "semver": "~6.3.0",
+    "unist-builder": "~1.0.4",
+    "unist-util-is": "~4.0.0"
+  },
+  "devDependencies": {
+    "remark": "^11.0.1",
+    "standard": "^14.0.2",
+    "tape": "^4.11.0",
+    "tempy": "^0.3.0"
+  },
+  "keywords": [
+    "changelog",
+    "keep-a-changelog",
+    "remark"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "repository": "vweevers/remark-changelog",
+  "bugs": "https://github.com/vweevers/remark-changelog/issues",
+  "homepage": "https://github.com/vweevers/remark-changelog"
+}
