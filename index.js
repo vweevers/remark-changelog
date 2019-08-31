@@ -161,14 +161,14 @@ function cmpRelease (a, b) {
 }
 
 function cmpVersion (a, b) {
-  if (a === 'unreleased') return b === 'unreleased' ? 0 : -1
+  if (a === b) return 0
+  if (a === 'unreleased') return -1
   if (b === 'unreleased') return 1
 
-  try {
-    return semver.compare(b, a)
-  } catch (err) {
-    return b - a
-  }
+  const av = semver.valid(a)
+  const bv = semver.valid(b)
+
+  return av && bv ? semver.compare(b, a) : av ? -1 : bv ? 1 : a.localeCompare(b)
 }
 
 function diffUrl (githubUrl, tags, version, prevVersion) {

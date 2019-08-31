@@ -77,7 +77,7 @@ Releases must be sorted latest-first according to semver rules. If there is an U
 
 ### `latest-definition-first`
 
-Definitions must be sorted latest-first same as releases. In `fix` mode, definitions are reordered.
+Definitions must be sorted latest-first, same as releases. Any additional definitions (that don't describe a release) must be last. In `fix` mode, definitions are reordered.
 
 Valid:
 

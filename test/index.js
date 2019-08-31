@@ -107,6 +107,44 @@ test('does not break on wrong release header level', function (t) {
   })
 })
 
+// TODO: should sort first, then lint links
+test.skip('sorts releases and definitions', function (t) {
+  t.plan(6)
+
+  run('06-unsorted-input', '06-unsorted-input', { options: { fix: false } }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(actual, expected)
+    t.same(file.messages.map(String), [
+      `${file.path}:1:1-23:62: Releases must be sorted latest-first`,
+      `${file.path}:1:1-27:62: Definitions must be sorted latest-first`
+    ])
+  })
+
+  run('06-unsorted-input', '06-unsorted-output', { options: { fix: true } }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(actual, expected)
+    t.same(file.messages.map(String), [])
+  })
+})
+
+test('sorts extra definitions lexicographically', function (t) {
+  t.plan(6)
+
+  run('07-extra-defs-input', '07-extra-defs-input', { options: { fix: false } }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(actual, expected)
+    t.same(file.messages.map(String), [
+      `${file.path}:1:1-27:62: Definitions must be sorted latest-first`
+    ])
+  })
+
+  run('07-extra-defs-input', '07-extra-defs-output', { options: { fix: true } }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(actual, expected)
+    t.same(file.messages.map(String), [])
+  })
+})
+
 function run (inputFixture, outputFixture, opts, test) {
   const cwd = tempy.directory()
   const inputFile = path.join(__dirname, 'fixture', inputFixture + '.md')
