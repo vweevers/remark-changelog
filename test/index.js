@@ -17,8 +17,8 @@ test('lints various', function (t) {
       `${file.path}:5:1-5:28: Release heading must be "Unreleased"`,
       `${file.path}:18:1-18:22: Release date must have format YYYY-MM-DD`,
       `${file.path}:1:1-28:65: Releases must be sorted latest-first`,
+      `${file.path}:5:1-5:28: Expected link to https://github.com/test/test/compare/v3.0.0...HEAD`,
       `${file.path}:3:1-3:42: Use link reference in release heading`,
-      `${file.path}:7:1-7:24: Expected link to https://github.com/test/test/compare/v2.0.1...v2.0.0`,
       `${file.path}:18:1-18:22: Release version must have a link`,
       `${file.path}:1:1-28:65: Definitions must be sorted latest-first`
     ])
@@ -107,8 +107,7 @@ test('does not break on wrong release header level', function (t) {
   })
 })
 
-// TODO: should sort first, then lint links
-test.skip('sorts releases and definitions', function (t) {
+test('sorts releases and definitions', function (t) {
   t.plan(6)
 
   run('06-unsorted-input', '06-unsorted-input', { options: { fix: false } }, (err, { file, actual, expected }) => {
@@ -116,7 +115,7 @@ test.skip('sorts releases and definitions', function (t) {
     t.is(actual, expected)
     t.same(file.messages.map(String), [
       `${file.path}:1:1-23:62: Releases must be sorted latest-first`,
-      `${file.path}:1:1-27:62: Definitions must be sorted latest-first`
+      `${file.path}:1:1-23:62: Definitions must be sorted latest-first`
     ])
   })
 

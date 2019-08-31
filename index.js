@@ -49,6 +49,9 @@ module.exports = function attacher (opts) {
       changelog.children.sort(cmpRelease)
     } else if (!isSorted(changelog.children, { comparator: cmpRelease })) {
       warn('Releases must be sorted latest-first', root, 'latest-release-first')
+
+      // Sort anyway (doesn't affect original tree) so that diff urls below will be correct.
+      changelog.children.sort(cmpRelease)
     }
 
     // Lint or rebuild headings, with links and definitions
