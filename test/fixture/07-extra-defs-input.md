@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+foo
+
 ## [3.0.0] - 2019-03-01
 
 ### Added
@@ -12,7 +14,11 @@
 
 ## [2.0.0] - 2019-02-01
 
+foo
+
 ## 1.0.0 - 2019-01-01
+
+bar
 
 [z]: https://example.com/z
 
