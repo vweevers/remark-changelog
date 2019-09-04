@@ -23,7 +23,7 @@ remark()
   })
 ```
 
-If you're looking for a CLI, checkout [`hallmark`](https://github.com/vweevers/hallmark), a markdown style guide with linter and automatic fixer.
+Pair with [`remark-github`](https://github.com/remarkjs/remark-github) for ultimate pleasure. If you're looking for a CLI that includes both, checkout [`hallmark`](https://github.com/vweevers/hallmark), a markdown style guide with linter and automatic fixer.
 
 ## Rules
 
@@ -96,6 +96,32 @@ Invalid:
 ### `unique-release`
 
 Each release must have a unique version.
+
+### `no-empty-release`
+
+A release section must have content. This also goes for the Unreleased section.
+
+In fix mode, an empty release is filled with a commit log as a leg up. Merge commits are skipped. GitHub merge commits ("Merge pull request #n") are used to annotate commits with a PR number (best effort). Squashed GitHub commits that have a default commit description (a list of squashed commits) are converted to sublists. Any other commit description is added as an unformatted code block, to give you the necessary context for writing release notes.
+
+Valid:
+
+```md
+## [2.0.0] - 2019-09-02
+
+foo
+
+## [1.0.0] - 2019-09-01
+
+bar
+```
+
+Invalid:
+
+```md
+## [2.0.0] - 2019-09-02
+
+## [1.0.0] - 2019-09-01
+```
 
 ### `group-heading`
 

@@ -2,17 +2,23 @@
 
 ## [Unreleased][unreleased]
 
+a
+
 ## [4.0.0] - 2019-04-01
+
+b
 
 ## [3.0.0] - 2019-03-01
 
+c
+
 ## [2.0.0] - 2019-02-01
 
-Foo
+d
 
 ## 1.0.0 - 2019-01-01
 
-Bar
+e
 
 [unreleased]: https://github.com/test/test/compare/v4.0.0...HEAD
 

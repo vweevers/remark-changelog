@@ -9,6 +9,8 @@ const closest = require('read-closest-package')
 const path = require('path')
 const execFileSync = require('child_process').execFileSync
 const Changelog = require('./lib/changelog')
+const getCommits = require('./lib/git-log-between')
+const getChanges = require('./lib/get-changes')
 const plugin = require('./package.json').name
 
 const REJECT_NAMES = new Set(['history', 'releases', 'changelog'])
@@ -18,17 +20,17 @@ module.exports = function attacher (opts) {
   opts = opts || {}
   const fix = !!opts.fix
 
-  return function transform (root, file, callback) {
+  return async function transform (root, file) {
     if (file.basename && file.basename !== 'CHANGELOG.md') {
       if (REJECT_NAMES.has(file.stem.toLowerCase())) {
         warn('Filename must be CHANGELOG.md', root, 'filename')
       }
 
-      return process.nextTick(callback)
+      return
     }
 
     if (!is(root, 'root') || !root.children) {
-      return process.nextTick(callback, new Error('Expected a root node'))
+      throw new Error('Expected a root node')
     }
 
     const changelog = Changelog(root.children)
@@ -43,27 +45,29 @@ module.exports = function attacher (opts) {
       warn('Changelog must start with a top-level "Changelog" heading', changelog.heading || root, 'title')
     }
 
-    changelog.children.forEach(lintRelease)
-
     if (fix) {
       changelog.children.sort(cmpRelease)
     } else if (!isSorted(changelog.children, { comparator: cmpRelease })) {
       warn('Releases must be sorted latest-first', root, 'latest-release-first')
 
-      // Sort anyway (doesn't affect original tree) so that diff urls below will be correct.
+      // Sort anyway (doesn't affect original tree) so that we
+      // can correctly compute diff urls and commit ranges below.
       changelog.children.sort(cmpRelease)
     }
 
+    changelog.children.forEach(relateVersions)
+    await Promise.all(changelog.children.map(lintRelease))
+
     // Lint or rebuild headings, with links and definitions
     for (let i = 0; i < changelog.children.length; i++) {
-      const { version, date, linkType, heading } = changelog.children[i]
+      const { version, previousVersion, date, linkType, heading } = changelog.children[i]
 
       if (i !== changelog.children.length - 1) {
-        if (!version || !changelog.children[i + 1].version) continue
+        if (!version || !previousVersion) continue
 
         const identifier = version.toLowerCase()
         const oldUrl = (changelog.definitions.get(identifier) || {}).url
-        const url = diffUrl(githubUrl, tags, version, changelog.children[i + 1].version)
+        const url = diffUrl(githubUrl, tags, version, previousVersion)
 
         if (fix) {
           const label = identifier
@@ -94,12 +98,17 @@ module.exports = function attacher (opts) {
       warn('Definitions must be sorted latest-first', root, 'latest-definition-first')
     }
 
-    // Reconstruct tree
-    if (fix) root.children = changelog.tree()
+    if (fix) {
+      // Reconstruct tree
+      root.children = changelog.tree()
+      return root
+    }
 
-    return process.nextTick(callback)
+    function relateVersions (release, i, arr) {
+      release.previousVersion = arr[i + 1] ? arr[i + 1].version : null
+    }
 
-    function lintRelease (release) {
+    async function lintRelease (release) {
       const { heading } = release
 
       if (!is(heading, { depth: 2 })) {
@@ -136,7 +145,48 @@ module.exports = function attacher (opts) {
         }
       }
 
+      if (release.isEmpty()) {
+        await lintEmptyRelease(release)
+      }
+
       release.children.forEach(lintGroup)
+    }
+
+    async function lintEmptyRelease (release) {
+      if (fix && release.version && release.previousVersion) {
+        const gt = forgivingTag(release.previousVersion, tags)
+        const opts = { cwd, gt, limit: 100 }
+
+        if (release.version === 'unreleased') {
+          opts.lte = 'HEAD'
+        } else {
+          opts.lt = forgivingTag(release.version, tags)
+        }
+
+        try {
+          var commits = await getCommits(opts)
+        } catch (err) {
+          const msg = `Failed to get commits for release (${release.version}): ${err.message}`
+          warn(msg, release.heading, 'no-empty-release')
+          return
+        }
+
+        const grouped = getChanges(commits)
+
+        for (const type in grouped) {
+          const changes = grouped[type]
+
+          if (changes.length) {
+            release
+              .createGroup(type)
+              .createList(changes)
+          }
+        }
+
+        if (!release.isEmpty()) return
+      }
+
+      warn(`Release (${release.version}) is empty`, release.heading, 'no-empty-release')
     }
 
     function lintGroup (group) {
@@ -183,6 +233,7 @@ function diffUrl (githubUrl, tags, version, prevVersion) {
 
 // If a (historical) tag without "v" prefix exists, use that.
 function forgivingTag (tag, tags) {
+  if (tag[0] !== 'v') tag = 'v' + tag
   if (tags.indexOf(tag) >= 0) return tag
   const unprefixed = tag.replace(/^v/, '')
   if (tags.indexOf(unprefixed) >= 0) return unprefixed
