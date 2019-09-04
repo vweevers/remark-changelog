@@ -1,6 +1,6 @@
 {
   "name": "remark-changelog",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Lint or fix a changelog written in markdown, following Keep A Changelog.",
   "license": "MIT",
   "author": "Vincent Weevers",
