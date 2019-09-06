@@ -160,6 +160,7 @@ function run (inputFixture, outputFixture, opts, test) {
 
   fs.writeFileSync(path.join(cwd, 'package.json'), JSON.stringify({
     name: 'test',
+    version: '0.0.0',
     repository: 'https://github.com/test/test.git',
     private: true
   }))

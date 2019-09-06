@@ -35,10 +35,14 @@ module.exports = function attacher (opts) {
     }
 
     const cwd = path.resolve(opts.cwd || file.cwd)
-    const repository = repo(opts.repository || closest.sync({ cwd }).repository)
+    const pkg = lazyPkg(cwd)
+    const repository = repo(opts.repository || pkg().repository)
+    const currentVersion = opts.version || pkg().version
 
     if (!repository) {
       throw new Error('No repository url found in package.json or options')
+    } else if (!currentVersion || semver.valid(currentVersion) !== currentVersion) {
+      throw new Error('No valid version found in package.json or options')
     }
 
     const githubUrl = github2(repository)
@@ -161,21 +165,23 @@ module.exports = function attacher (opts) {
     }
 
     async function lintEmptyRelease (release) {
-      if (fix && release.version && release.previousVersion) {
-        const gt = forgivingTag(release.previousVersion, tags)
+      const { heading, version, previousVersion } = release
+
+      if (fix && version && previousVersion) {
+        const gt = forgivingTag(previousVersion, tags)
         const opts = { cwd, gt, limit: 100 }
 
-        if (release.version === 'unreleased') {
+        if (version === 'unreleased' || isNewVersion(version, previousVersion)) {
           opts.lte = 'HEAD'
         } else {
-          opts.lt = forgivingTag(release.version, tags)
+          opts.lt = forgivingTag(version, tags)
         }
 
         try {
           var commits = await getCommits(opts)
         } catch (err) {
-          const msg = `Failed to get commits for release (${release.version}): ${err.message}`
-          warn(msg, release.heading, 'no-empty-release')
+          const msg = `Failed to get commits for release (${version}): ${err.message}`
+          warn(msg, heading, 'no-empty-release')
           return
         }
 
@@ -194,7 +200,7 @@ module.exports = function attacher (opts) {
         if (!release.isEmpty()) return
       }
 
-      warn(`Release (${release.version}) is empty`, release.heading, 'no-empty-release')
+      warn(`Release (${version || 'n/a'}) is empty`, heading, 'no-empty-release')
     }
 
     function lintGroup (group) {
@@ -211,6 +217,20 @@ module.exports = function attacher (opts) {
 
     function warn (msg, node, rule) {
       file.message(msg, node, `${plugin}:${rule}`)
+    }
+
+    function lazyPkg (cwd) {
+      let pkg
+
+      return function () {
+        pkg = pkg || closest.sync({ cwd }) || {}
+        return pkg
+      }
+    }
+
+    function isNewVersion (nextVersion, previousVersion) {
+      return previousVersion === currentVersion &&
+        semver.gt(nextVersion, currentVersion)
     }
   }
 }
