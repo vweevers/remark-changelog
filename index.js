@@ -11,6 +11,7 @@ const execFileSync = require('child_process').execFileSync
 const Changelog = require('./lib/changelog')
 const getCommits = require('./lib/git-log-between')
 const getChanges = require('./lib/get-changes')
+const parser = require('./lib/parser')
 const plugin = require('./package.json').name
 
 const REJECT_NAMES = new Set(['history', 'releases', 'changelog'])
@@ -33,9 +34,16 @@ module.exports = function attacher (opts) {
       throw new Error('Expected a root node')
     }
 
-    const changelog = Changelog(root.children)
     const cwd = path.resolve(opts.cwd || file.cwd)
-    const githubUrl = github2(opts.repository || closest.sync({ cwd }))
+    const repository = repo(opts.repository || closest.sync({ cwd }).repository)
+
+    if (!repository) {
+      throw new Error('No repository url found in package.json or options')
+    }
+
+    const githubUrl = github2(repository)
+    const parse = parser(repository)
+    const changelog = Changelog(parse, root.children)
     const tags = gitTags(cwd)
     const versions = new Set()
 
@@ -246,16 +254,16 @@ function gitTags (cwd) {
   }).split('\n')
 }
 
+function repo (repository) {
+  return (repository && repository.url) || repository
+}
+
 // TODO: there's a package that does this, can't find it
-function github2 (repo) {
-  if (!repo) return
-
-  repo = repo.url || repo
-
-  if (/^[a-z0-9-_]+\/[a-z0-9-_]+$/i.test(repo)) {
-    return 'https://github.com/' + repo
+function github2 (repository) {
+  if (/^[a-z0-9-_]+\/[a-z0-9-_]+$/i.test(repository)) {
+    return 'https://github.com/' + repository
   } else {
-    return github(repo)
+    return github({ repository })
   }
 }
 

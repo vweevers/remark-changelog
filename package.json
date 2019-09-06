@@ -16,7 +16,10 @@
     "is-array-sorted": "~2.0.0",
     "isomorphic-git": "~0.64.6",
     "read-closest-package": "~1.2.0",
+    "remark-github": "~8.0.0",
+    "remark-parse": "~7.0.1",
     "semver": "~6.3.0",
+    "unified": "~8.3.2",
     "unist-builder": "~1.0.4",
     "unist-util-is": "~4.0.0"
   },
