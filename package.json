@@ -15,6 +15,7 @@
     "github-from-package": "0.0.0",
     "is-array-sorted": "~2.0.0",
     "isomorphic-git": "~0.64.6",
+    "parse-github-url": "^1.0.2",
     "read-closest-package": "~1.2.0",
     "semver": "~6.3.0",
     "unist-builder": "~1.0.4",

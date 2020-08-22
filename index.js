@@ -20,6 +20,7 @@ module.exports = function attacher (opts) {
   opts = opts || {}
 
   const fix = !!opts.fix
+  const submodules = !!opts.submodules
   const parse = (str) => this.parse(str).children
 
   return async function transform (root, file) {
@@ -169,7 +170,7 @@ module.exports = function attacher (opts) {
 
       if (fix && version && previousVersion) {
         const gt = forgivingTag(previousVersion, tags)
-        const opts = { cwd, gt, limit: 100 }
+        const opts = { cwd, gt, limit: 100, submodules }
 
         if (version === 'unreleased' || isNewVersion(version, previousVersion)) {
           opts.lte = 'HEAD'
