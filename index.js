@@ -230,7 +230,7 @@ module.exports = function attacher (opts) {
 
     function isNewVersion (nextVersion, previousVersion) {
       return previousVersion === currentVersion &&
-        semver.gt(nextVersion, currentVersion)
+        cmpVersion(nextVersion, currentVersion) < 0
     }
   }
 }
@@ -246,10 +246,14 @@ function cmpVersion (a, b) {
   if (a === 'unreleased') return -1
   if (b === 'unreleased') return 1
 
-  const av = semver.valid(a)
-  const bv = semver.valid(b)
+  let av = semver.valid(a)
+  let bv = semver.valid(b)
 
-  return av && bv ? semver.compare(b, a) : av ? -1 : bv ? 1 : a.localeCompare(b)
+  // Make -rc9 vs -rc10 sortable by converting to (proper) -rc.9 vs -rc.10
+  if (av) av = av.replace(/-rc(\d+)$/, (m, p1) => '-rc.' + p1)
+  if (bv) bv = bv.replace(/-rc(\d+)$/, (m, p1) => '-rc.' + p1)
+
+  return av && bv ? semver.compare(bv, av) : av ? -1 : bv ? 1 : a.localeCompare(b)
 }
 
 function diffUrl (githubUrl, tags, version, prevVersion) {
