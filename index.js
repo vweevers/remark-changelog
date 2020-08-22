@@ -11,7 +11,6 @@ const execFileSync = require('child_process').execFileSync
 const Changelog = require('./lib/changelog')
 const getCommits = require('./lib/git-log-between')
 const getChanges = require('./lib/get-changes')
-const parser = require('./lib/parser')
 const plugin = require('./package.json').name
 
 const REJECT_NAMES = new Set(['history', 'releases', 'changelog'])
@@ -19,7 +18,9 @@ const GROUP_TYPES = new Set(['Changed', 'Added', 'Deprecated', 'Removed', 'Fixed
 
 module.exports = function attacher (opts) {
   opts = opts || {}
+
   const fix = !!opts.fix
+  const parse = (str) => this.parse(str).children
 
   return async function transform (root, file) {
     if (file.basename && file.basename !== 'CHANGELOG.md') {
@@ -47,7 +48,6 @@ module.exports = function attacher (opts) {
     }
 
     const githubUrl = github2(repository)
-    const parse = parser(repository)
     const changelog = Changelog(parse, root.children)
     const versions = new Set()
 
