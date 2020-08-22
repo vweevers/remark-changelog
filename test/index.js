@@ -41,8 +41,8 @@ test('fixes various', function (t) {
       `${file.path}:18:1-18:22: Release date must have format YYYY-MM-DD`,
 
       // TODO: write test
-      `${file.path}:3:1-3:42: Failed to get commits for release (3.0.0): Could not resolve reference "v2.0.1".`,
-      `${file.path}:5:1-5:28: Failed to get commits for release (unreleased): Could not resolve reference "v3.0.0".`
+      `${file.path}:3:1-3:42: Failed to get commits for release (3.0.0): Could not find v2.0.1.`,
+      `${file.path}:5:1-5:28: Failed to get commits for release (unreleased): Could not find v3.0.0.`
     ])
     t.end()
   })
