@@ -37,7 +37,8 @@ module.exports = function attacher (opts) {
     const cwd = path.resolve(opts.cwd || file.cwd)
     const pkg = lazyPkg(cwd)
     const repository = repo(opts.repository || pkg().repository)
-    const currentVersion = opts.version || pkg().version
+    const tags = gitTags(cwd)
+    const currentVersion = opts.version || pkg().version || lastTagVersion(tags)
 
     if (!repository) {
       throw new Error('No repository url found in package.json or options')
@@ -48,7 +49,6 @@ module.exports = function attacher (opts) {
     const githubUrl = github2(repository)
     const parse = parser(repository)
     const changelog = Changelog(parse, root.children)
-    const tags = gitTags(cwd)
     const versions = new Set()
 
     if (fix) {
@@ -276,6 +276,14 @@ function gitTags (cwd) {
 
 function repo (repository) {
   return (repository && repository.url) || repository
+}
+
+function lastTagVersion (tags) {
+  const sorted = tags
+    .filter(t => t.startsWith('v'))
+    .sort(cmpVersion)
+
+  return sorted.length ? sorted[0].slice(1) : null
 }
 
 // TODO: there's a package that does this, can't find it
