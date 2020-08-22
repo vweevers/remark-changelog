@@ -271,7 +271,7 @@ function forgivingTag (tag, tags) {
 function gitTags (cwd) {
   return execFileSync('git', ['tag'], {
     cwd, maxBuffer: 1024 * 1024 * 16, encoding: 'utf8'
-  }).split('\n')
+  }).split(/\r?\n/).filter(Boolean)
 }
 
 function repo (repository) {
