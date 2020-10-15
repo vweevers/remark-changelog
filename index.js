@@ -40,11 +40,11 @@ module.exports = function attacher (opts) {
     const pkg = lazyPkg(cwd)
     const repository = repo(opts.repository || pkg().repository)
     const tags = gitTags(cwd)
-    const currentVersion = opts.version || pkg().version || lastTagVersion(tags)
+    const currentVersion = opts.version || pkg().version || lastTagVersion(tags) || '0.0.0'
 
     if (!repository) {
       throw new Error('No repository url found in package.json or options')
-    } else if (!currentVersion || semver.valid(currentVersion) !== currentVersion) {
+    } else if (semver.valid(currentVersion) !== currentVersion) {
       throw new Error('No valid version found in package.json or options')
     }
 
