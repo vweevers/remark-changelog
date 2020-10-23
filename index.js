@@ -22,6 +22,7 @@ module.exports = function attacher (opts) {
 
   const fix = !!opts.fix
   const submodules = !!opts.submodules
+  const add = opts.add
   const parse = (str) => this.parse(str).children
 
   return async function transform (root, file) {
@@ -60,6 +61,10 @@ module.exports = function attacher (opts) {
     }
 
     if (fix) {
+      if (add) {
+        addRelease(add)
+      }
+
       changelog.children.sort(cmpRelease)
     } else if (!isSorted(changelog.children, { comparator: cmpRelease })) {
       warn('Releases must be sorted latest-first', root, 'latest-release-first')
@@ -120,6 +125,45 @@ module.exports = function attacher (opts) {
 
     function relateVersions (release, i, arr) {
       release.previousVersion = arr[i + 1] ? arr[i + 1].version : null
+    }
+
+    function addRelease (add) {
+      if (Array.isArray(add)) {
+        add.forEach(addRelease)
+        return
+      } else if (typeof add !== 'string' || add === '') {
+        warn('Target must be a non-empty string', root, 'add-new-release')
+        return
+      }
+
+      let target = semver.valid(add)
+
+      if (!target) {
+        const lastRelease = changelog.children[0]
+        const from = (lastRelease && lastRelease.version) || currentVersion
+
+        if (from === 'unreleased') { // TODO
+          warn('Bumping Unreleased is not implemented yet', root, 'add-new-release')
+          return
+        } else if (!from) {
+          warn('No version found to start from', root, 'add-new-release')
+          return
+        }
+
+        target = semver.inc(from, add)
+      }
+
+      if (!target) {
+        warn(`Target (${add}) must be a version or release type ([pre]major, [pre]minor, [pre]patch or prerelease)`, root, 'add-new-release')
+        return
+      } else if (changelog.children.some(release => release.version === target)) {
+        warn(`Target version ${target} already exists`, root, 'add-new-release')
+        return
+      }
+
+      // Will be sorted and populated by other code
+      // TODO: take date from tag if it exists
+      changelog.createRelease(target, releaseDate(opts.Date || Date))
     }
 
     async function lintRelease (release) {
@@ -332,4 +376,17 @@ function sortMap (map, comparator) {
   const entries = Array.from(map.entries())
   entries.sort((a, b) => comparator(a[0], b[0]))
   return new Map(entries)
+}
+
+function releaseDate (Ctor) {
+  const date = new Ctor()
+  const yyyy = date.getFullYear()
+  const mm = twoDigits(date.getMonth() + 1)
+  const dd = twoDigits(date.getDate())
+
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function twoDigits (n) {
+  return n < 10 ? `0${n}` : n
 }

@@ -1,7 +1,6 @@
 # remark-changelog
 
-> **Lint or fix a changelog written in markdown, following [`Keep A Changelog`](https://keepachangelog.com/en/1.0.0/).**  
-> Changelogs should be written by humans, for humans. This tool focuses on helping you do that, rather than automatically generating a full changelog.
+**Lint or fix a changelog written in markdown, following [`Keep A Changelog`](https://keepachangelog.com/en/1.0.0/).** Changelogs should be written by humans, for humans. This tool focuses on helping you do that.
 
 [![npm status](http://img.shields.io/npm/v/remark-changelog.svg)](https://www.npmjs.org/package/remark-changelog)
 [![node](https://img.shields.io/node/v/remark-changelog.svg)](https://www.npmjs.org/package/remark-changelog)
@@ -161,6 +160,12 @@ Options:
 - `repository` (string or object): defaults to `repository` field of nearby `package.json`. Used to construct diff URLs and to wrap GitHub references (to issues, PRs, users) in links.
 - `version` (string): defaults to `version` field of nearby `package.json`. Used to identify a new release (anything that's greater than `version` and would normally be rejected in fix mode because it has no git tag yet) to support the workflow of updating a changelog before tagging.
 - `submodules` (boolean): enable experimental git submodule support. Will collect commits from submodules and list them in the changelog as `<name>: <message>`.
+- `add` (string): add a new changelog entry (only if `fix` is true). Value must be one of:
+  - A release type: `major`, `minor`, `patch`, `premajor`, `preminor`, `prepatch`, `prerelease` (relative to last entry in changelog)
+    - The `major` type bumps the major version (for example `2.4.1 => 3.0.0`); `minor` and `patch` work the same way.
+    - The `premajor` type bumps the version up to the next major version and down to a prerelease of that major version; `preminor` and `prepatch` work the same way.
+    - The `prerelease` type works the same as `prepatch` if the previous version is a non-prerelease. If the previous is already a prerelease then it's simply incremented (for example `4.0.0-rc.2 => 4.0.0-rc.3`).
+  - A specific version like 2.4.0 (must be [semver](https://semver.org/)). This can also be used to insert a missing version (that is not necessarily the latest).
 
 ## FAQ
 

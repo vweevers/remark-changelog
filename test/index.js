@@ -176,20 +176,94 @@ test('lints uncategorized changes', function (t) {
   })
 })
 
+test('add prerelease', function (t) {
+  const options = {
+    fix: true,
+    add: 'prerelease',
+    Date: function () {
+      return new Date('2020-01-02')
+    }
+  }
+
+  const commits = [
+    { version: '1.0.0-rc.9' },
+    { message: 'Fix beep boop' }
+  ]
+
+  run('10-add-input', '10-add-output', { options, commits }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(replaceCommitReferences(actual), expected)
+    t.same(file.messages.map(String), [
+      `${file.path}:1:1-1:1: Categorize the changes`
+    ])
+    t.end()
+  })
+})
+
+test('add preexisting release', function (t) {
+  const options = {
+    fix: true,
+    add: '1.0.0-rc.9'
+  }
+
+  const commits = [
+    { version: '1.0.0-rc.8' },
+    { message: 'Prepare 1.0.0-rc.9' },
+    { version: '1.0.0-rc.9' },
+    { message: 'Prepare 1.0.0-rc.10' },
+    { version: '1.0.0-rc.10' }
+  ]
+
+  run('11-add-input', '11-add-output', { options, commits }, (err, { file, actual, expected }) => {
+    t.ifError(err)
+    t.is(replaceCommitReferences(actual), replaceDates(expected))
+    t.same(file.messages.map(String), [
+      `${file.path}:1:1-1:1: Categorize the changes`
+    ])
+    t.end()
+  })
+})
+
 function run (inputFixture, outputFixture, opts, test) {
   const cwd = tempy.directory()
   const inputFile = path.join(__dirname, 'fixture', inputFixture + '.md')
   const outputFile = path.join(__dirname, 'fixture', outputFixture + '.md')
-  const { options } = opts
+  const pkgFile = path.join(cwd, 'package.json')
+  const { options, commits } = opts
+  const stdio = 'ignore'
 
-  execFileSync('git', ['init', '.'], { cwd, stdio: 'ignore' })
-
-  fs.writeFileSync(path.join(cwd, 'package.json'), JSON.stringify({
+  const pkg = {
     name: 'test',
     version: '0.0.0',
     repository: 'https://github.com/test/test.git',
-    private: true
-  }))
+    private: true,
+    _count: 0
+  }
+
+  execFileSync('git', ['init', '.'], { cwd, stdio })
+  fs.writeFileSync(pkgFile, JSON.stringify(pkg))
+
+  if (commits) {
+    execFileSync('git', ['config', 'user.name', 'test user'], { cwd, stdio })
+    execFileSync('git', ['config', 'user.email', 'test@localhost'], { cwd, stdio })
+    execFileSync('git', ['add', 'package.json'], { cwd, stdio })
+    execFileSync('git', ['commit', '-m', 'Initial'], { cwd, stdio })
+
+    for (const { message, version } of commits) {
+      if (message) {
+        pkg._count++
+        fs.writeFileSync(pkgFile, JSON.stringify(pkg))
+        execFileSync('git', ['commit', '-am', message], { cwd, stdio })
+      } else if (version) {
+        pkg.version = version
+        fs.writeFileSync(pkgFile, JSON.stringify(pkg))
+        execFileSync('git', ['commit', '-am', version], { cwd, stdio })
+        execFileSync('git', ['tag', '-a', 'v' + version, '-m', 'v' + version], { cwd, stdio })
+      } else {
+        throw new Error('Invalid mock commit')
+      }
+    }
+  }
 
   const input = fs.readFileSync(inputFile, 'utf8').trim()
   const expected = fs.readFileSync(outputFile, 'utf8').trim()
@@ -205,4 +279,25 @@ function run (inputFixture, outputFixture, opts, test) {
       const actual = String(file).trim()
       process.nextTick(test, err, { file, cwd, actual, expected })
     })
+}
+
+function replaceCommitReferences (str) {
+  return str.replace(/\([a-z0-9]{7}\)/g, '(xxxxxxx)')
+}
+
+function replaceDates (str) {
+  return str.replace(/YYYY-MM-DD/g, releaseDate())
+}
+
+function releaseDate () {
+  const date = new Date()
+  const yyyy = date.getFullYear()
+  const mm = twoDigits(date.getMonth() + 1)
+  const dd = twoDigits(date.getDate())
+
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function twoDigits (n) {
+  return n < 10 ? `0${n}` : n
 }
