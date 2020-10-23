@@ -15,6 +15,7 @@ const plugin = require('./package.json').name
 
 const REJECT_NAMES = new Set(['history', 'releases', 'changelog'])
 const GROUP_TYPES = new Set(['Changed', 'Added', 'Deprecated', 'Removed', 'Fixed', 'Security'])
+const UNCATEGORIZED = 'Uncategorized'
 
 module.exports = function attacher (opts) {
   opts = opts || {}
@@ -162,7 +163,13 @@ module.exports = function attacher (opts) {
         await lintEmptyRelease(release)
       }
 
-      release.children.forEach(lintGroup)
+      const hasUncategorizedChanges = release.children.some(function (group) {
+        return group.type() === UNCATEGORIZED && !group.isEmpty()
+      })
+
+      release.children.forEach(function (group) {
+        lintGroup(group, hasUncategorizedChanges)
+      })
     }
 
     async function lintEmptyRelease (release) {
@@ -188,13 +195,20 @@ module.exports = function attacher (opts) {
 
         const grouped = getChanges(commits)
 
+        // Add other types as a hint to categorize
+        const insertEmpty = grouped[UNCATEGORIZED].length > 0
+
         for (const type in grouped) {
           const changes = grouped[type]
 
+          if (!changes.length && (!insertEmpty || type === UNCATEGORIZED)) {
+            continue
+          }
+
+          const group = release.createGroup(type)
+
           if (changes.length) {
-            release
-              .createGroup(type)
-              .createList(changes)
+            group.createList(changes)
           }
         }
 
@@ -204,15 +218,25 @@ module.exports = function attacher (opts) {
       warn(`Release (${version || 'n/a'}) is empty`, heading, 'no-empty-release')
     }
 
-    function lintGroup (group) {
+    function lintGroup (group, hasUncategorizedChanges) {
       if (!group.hasValidHeading()) {
         warn('Group must start with a third-level, text-only heading', group.heading, 'group-heading')
         return
       }
 
-      if (!GROUP_TYPES.has(group.type())) {
-        const types = Array.from(GROUP_TYPES).join(', ')
+      const type = group.type()
+      const types = Array.from(GROUP_TYPES).join(', ')
+
+      if (!type) {
         warn(`Group heading must be one of ${types}`, group.heading, 'group-heading-type')
+      } else if ((type === UNCATEGORIZED || !hasUncategorizedChanges) && group.isEmpty()) {
+        warn(`Remove empty group ${type}`, group.heading, 'no-empty-group')
+      } else if (!GROUP_TYPES.has(type)) {
+        if (type === UNCATEGORIZED) {
+          warn('Categorize the changes', group.heading, 'no-uncategorized-changes')
+        } else {
+          warn(`Group heading must be one of ${types}`, group.heading, 'group-heading-type')
+        }
       }
     }
 

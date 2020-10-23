@@ -101,7 +101,7 @@ Each release must have a unique version.
 
 A release section must have content. This also goes for the Unreleased section.
 
-In fix mode, an empty release is filled with a commit log as a leg up. Merge commits are skipped. GitHub merge commits ("Merge pull request #n") are used to annotate commits with a PR number (best effort). Squashed GitHub commits that have a default commit description (a list of squashed commits) are converted to sublists. Any other commit description is added as an unformatted code block, to give you the necessary context for writing release notes.
+In fix mode, an empty release is filled with a commit log as a leg up. Merge commits are skipped. GitHub merge commits ("Merge pull request #n") are used to annotate commits with a PR number (best effort). Squashed GitHub commits that have a default commit description (a list of squashed commits) are converted to sublists.
 
 Valid:
 
@@ -130,6 +130,19 @@ A "group" (of changes) must start with a third-level, text-only heading.
 ### `group-heading-type`
 
 A group heading must be one of Changed, Added, Deprecated, Removed, Fixed, Security.
+
+### `no-empty-group`
+
+A group must not be empty. Invalid:
+
+```md
+### Added
+### Fixed
+```
+
+### `no-uncategorized-changes`
+
+There should not be a group with heading Uncategorized. This group is added by `remark-changelog` if the `fix` option is true and it populates an empty release with commits. This rule then hints that changes should be categorized.
 
 ### `filename`
 
