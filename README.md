@@ -4,7 +4,7 @@
 
 [![npm status](http://img.shields.io/npm/v/remark-changelog.svg)](https://www.npmjs.org/package/remark-changelog)
 [![node](https://img.shields.io/node/v/remark-changelog.svg)](https://www.npmjs.org/package/remark-changelog)
-[![Travis build status](https://img.shields.io/travis/vweevers/remark-changelog.svg?label=travis)](http://travis-ci.org/vweevers/remark-changelog)
+[![Travis build status](https://img.shields.io/travis/com/vweevers/remark-changelog.svg)](http://travis-ci.com/vweevers/remark-changelog)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 ## Usage
