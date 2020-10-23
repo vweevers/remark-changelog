@@ -14,7 +14,7 @@
   "dependencies": {
     "github-from-package": "0.0.0",
     "is-array-sorted": "^2.0.0",
-    "isomorphic-git": "^1.7.4",
+    "isomorphic-git": "^1.7.8",
     "parse-github-url": "^1.0.2",
     "read-closest-package": "^1.2.0",
     "semver": "^7.3.2",

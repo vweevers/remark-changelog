@@ -265,8 +265,8 @@ function run (inputFixture, outputFixture, opts, test) {
     }
   }
 
-  const input = fs.readFileSync(inputFile, 'utf8').trim()
-  const expected = fs.readFileSync(outputFile, 'utf8').trim()
+  const input = fs.readFileSync(inputFile, 'utf8').trim().replace(/\r\n/g, '\n')
+  const expected = fs.readFileSync(outputFile, 'utf8').trim().replace(/\r\n/g, '\n')
 
   remark()
     .use({ settings: { fences: true, listItemIndent: '1' } })
@@ -276,7 +276,7 @@ function run (inputFixture, outputFixture, opts, test) {
     })
     .use(plugin, options)
     .process(input, (err, file) => {
-      const actual = String(file).trim()
+      const actual = String(file).trim().replace(/\r\n/g, '\n')
       process.nextTick(test, err, { file, cwd, actual, expected })
     })
 }
