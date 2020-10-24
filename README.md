@@ -157,8 +157,9 @@ Options:
 
 - `fix` (boolean): attempt to fix issues
 - `cwd` (string): working directory, defaults to `cwd` of file or `process.cwd()`
-- `repository` (string or object): defaults to `repository` field of nearby `package.json`. Used to construct diff URLs and to wrap GitHub references (to issues, PRs, users) in links.
-- `version` (string): defaults to `version` field of nearby `package.json`. Used to identify a new release (anything that's greater than `version` and would normally be rejected in fix mode because it has no git tag yet) to support the workflow of updating a changelog before tagging.
+- `pkg` (object): a parsed `package.json`, defaults to reading a nearby `package.json` (starting in `cwd` and then its parent directories)
+- `repository` (string or object): defaults to `repository` field of `pkg`. Used to construct diff URLs.
+- `version` (string): defaults to `version` field of `pkg` or the last tag. Used to identify a new release (anything that's greater than `version` and would normally be rejected in fix mode because it has no git tag yet) to support the workflow of updating a changelog before tagging.
 - `submodules` (boolean): enable experimental git submodule support. Will collect commits from submodules and list them in the changelog as `<name>: <message>`.
 - `add` (string): add a new changelog entry (only if `fix` is true). Value must be one of:
   - A release type: `major`, `minor`, `patch`, `premajor`, `preminor`, `prepatch`, `prerelease` (relative to last entry in changelog)

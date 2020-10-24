@@ -39,7 +39,7 @@ module.exports = function attacher (opts) {
     }
 
     const cwd = path.resolve(opts.cwd || file.cwd)
-    const pkg = lazyPkg(cwd)
+    const pkg = lazyPkg(cwd, opts.pkg)
     const repository = repo(opts.repository || pkg().repository)
     const tags = gitTags(cwd)
     const currentVersion = opts.version || pkg().version || lastTagVersion(tags) || '0.0.0'
@@ -288,9 +288,7 @@ module.exports = function attacher (opts) {
       file.message(msg, node, `${plugin}:${rule}`)
     }
 
-    function lazyPkg (cwd) {
-      let pkg
-
+    function lazyPkg (cwd, pkg) {
       return function () {
         pkg = pkg || closest.sync({ cwd }) || {}
         return pkg
