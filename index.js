@@ -81,32 +81,35 @@ module.exports = function attacher (opts) {
     for (let i = 0; i < changelog.children.length; i++) {
       const { version, previousVersion, date, linkType, heading } = changelog.children[i]
 
-      if (i !== changelog.children.length - 1) {
-        if (!version || !previousVersion) continue
+      if (!version) continue
 
-        const identifier = version.toLowerCase()
-        const oldUrl = (changelog.definitions.get(identifier) || {}).url
-        const url = diffUrl(githubUrl, tags, version, previousVersion)
+      const identifier = version.toLowerCase()
+      const oldUrl = (changelog.definitions.get(identifier) || {}).url
+      const url = oldUrl || defaultReleaseUrl(githubUrl, tags, version, previousVersion)
+      const isFirstRelease = i === changelog.children.length - 1
 
-        if (fix) {
-          const label = identifier
-          const referenceType = version === 'unreleased' ? 'full' : 'shortcut'
+      if (version === 'unreleased' && !url) {
+        continue
+      }
 
-          heading.children = [u('linkReference', { identifier, label, referenceType }, [
-            u('text', version === 'unreleased' ? 'Unreleased' : version)
-          ])]
+      if (fix) {
+        const label = identifier
+        const referenceType = version === 'unreleased' ? 'full' : 'shortcut'
 
-          if (version !== 'unreleased') {
-            heading.children.push(u('text', ` - ${date || 'YYYY-MM-DD'}`))
-          }
+        heading.children = [u('linkReference', { identifier, label, referenceType }, [
+          u('text', version === 'unreleased' ? 'Unreleased' : version)
+        ])]
 
-          changelog.definitions.set(identifier, u('definition', { identifier, label, url, title: null }))
-        } else if (!linkType) {
+        if (version !== 'unreleased') {
+          heading.children.push(u('text', ` - ${date || 'YYYY-MM-DD'}`))
+        }
+
+        changelog.definitions.set(identifier, u('definition', { identifier, label, url, title: null }))
+      } else if (!isFirstRelease && version !== 'unreleased') {
+        if (!linkType) {
           warn('Release version must have a link', heading, 'release-version-link')
         } else if (linkType !== 'linkReference') {
           warn('Use link reference in release heading', heading, 'release-version-link-reference')
-        } else if (oldUrl !== url) {
-          warn(`Expected link to ${url}`, heading, 'release-version-link')
         }
       }
     }
@@ -323,7 +326,12 @@ function cmpVersion (a, b) {
   return av && bv ? semver.compare(bv, av) : av ? -1 : bv ? 1 : a.localeCompare(b)
 }
 
-function diffUrl (githubUrl, tags, version, prevVersion) {
+// TODO: https://github.com/vweevers/hallmark/issues/82
+function defaultReleaseUrl (githubUrl, tags, version, prevVersion) {
+  if (!prevVersion) {
+    return version === 'unreleased' ? null : `${githubUrl}/releases/tag/${forgivingTag(`v${version}`, tags)}`
+  }
+
   const left = forgivingTag(`v${prevVersion}`, tags)
   const right = version === 'unreleased' ? 'HEAD' : forgivingTag(`v${version}`, tags)
 

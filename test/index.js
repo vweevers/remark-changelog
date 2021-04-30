@@ -19,7 +19,6 @@ test('lints various', function (t) {
       `${file.path}:5:1-5:28: Release (unreleased) is empty`,
       `${file.path}:3:1-3:42: Release (3.0.0) is empty`,
       `${file.path}:18:1-18:22: Release date must have format YYYY-MM-DD`,
-      `${file.path}:5:1-5:28: Expected link to https://github.com/test/test/compare/v3.0.0...HEAD`,
       `${file.path}:3:1-3:42: Use link reference in release heading`,
       `${file.path}:18:1-18:22: Release version must have a link`,
       `${file.path}:1:1-28:65: Definitions must be sorted latest-first`

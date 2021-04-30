@@ -16,7 +16,7 @@ c
 
 d
 
-## 1.0.0 - 2019-01-01
+## [1.0.0] - 2019-01-01
 
 e
 
@@ -27,3 +27,5 @@ e
 [3.0.0]: https://github.com/test/test/compare/v2.0.0...v3.0.0
 
 [2.0.0]: https://github.com/test/test/compare/v1.0.0...v2.0.0
+
+[1.0.0]: https://github.com/test/test/releases/tag/v1.0.0

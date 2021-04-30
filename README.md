@@ -44,9 +44,7 @@ Release must have a semver-valid version, without `v` prefix. Releases that have
 
 ### `release-version-link`
 
-Release version must link to `https://github.com/OWNER/REPO/compare/A...B`. In `fix` mode links are automatically inserted, requiring a nearby `package.json` with a `repository` field. The link is optional for the oldest (last listed) release.
-
-:warning: Currently, the changelog is the source of truth for the list of versions (rather than git tags) which has some side effects if a release is missing in the changelog.
+Release version must have a link. The destination URL is not linted. In `fix` mode links are automatically inserted (to `https://github.com/OWNER/REPO/compare/A...B` or `https://github.com/OWNER/REPO/releases/tag/$tag` for the oldest release) requiring a nearby `package.json` with a `repository` field. The link is optional for the oldest (last listed) release.
 
 ### `release-version-link-reference`
 
