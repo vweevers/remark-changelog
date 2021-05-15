@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    ignore:
+      # Ignored until we migrate to remark 13
+      - dependency-name: unist-builder
+      - dependency-name: unist-util-is
+      - dependency-name: remark
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
