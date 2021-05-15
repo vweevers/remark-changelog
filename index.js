@@ -232,8 +232,10 @@ module.exports = function attacher (opts) {
           opts.lt = forgivingTag(version, tags)
         }
 
+        let commits
+
         try {
-          var commits = await getCommits(opts)
+          commits = await getCommits(opts)
         } catch (err) {
           const msg = `Failed to get commits for release (${version}): ${err.message}`
           warn(msg, heading, 'no-empty-release')
